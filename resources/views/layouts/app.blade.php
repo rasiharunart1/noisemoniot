@@ -42,9 +42,8 @@
         </div>
 
         <!-- Sidebar -->
-        <aside class="fixed left-0 top-0 z-40 h-screen w-64 transition-transform sm:translate-x-0"
-               x-bind:class="mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'"
-               @click.away="if(window.innerWidth < 640) mobileMenuOpen = false"
+        <aside class="fixed left-0 top-0 z-40 h-screen w-64 transition-all duration-300 ease-in-out sm:translate-x-0"
+               :class="mobileMenuOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'"
                aria-label="Sidebar">
             <!-- Floating Container -->
             <div class="h-full p-4">
@@ -171,7 +170,7 @@
                     <div class="flex items-center justify-between">
                         <div class="flex items-center">
                             <!-- Mobile Menu Toggle -->
-                            <button @click="mobileMenuOpen = true" class="sm:hidden mr-3 p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10">
+                            <button @click.stop="mobileMenuOpen = !mobileMenuOpen" class="sm:hidden mr-3 p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                                 </svg>
