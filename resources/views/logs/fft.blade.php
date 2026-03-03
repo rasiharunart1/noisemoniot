@@ -64,23 +64,64 @@
             </h3>
             
             @if(count($archives) > 0)
-            <form action="{{ route('logs.fft.bulk_download') }}" method="POST" x-ref="bulkForm">
-                @csrf
-                <template x-for="filename in selected">
-                    <input type="hidden" name="files[]" :value="filename">
-                </template>
-                <button type="submit" 
+            <div class="flex items-center space-x-2">
+                <!-- Bulk Download -->
+                <button type="button"
                         x-show="selected.length > 0"
-                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center"
-                        style="display: none;">
+                        style="display: none;"
+                        @click="
+                            const form = document.getElementById('bulk-download-form');
+                            form.querySelectorAll('input[name=\'files[]\']').forEach(el => el.remove());
+                            selected.forEach(f => {
+                                const inp = document.createElement('input');
+                                inp.type = 'hidden';
+                                inp.name = 'files[]';
+                                inp.value = f;
+                                form.appendChild(inp);
+                            });
+                            form.submit();
+                        "
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center">
                     <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
                     Download <span x-text="selected.length"></span> File(s)
                 </button>
-            </form>
+                <form id="bulk-download-form" action="{{ route('logs.fft.bulk_download') }}" method="POST" style="display:none;">
+                    @csrf
+                </form>
+
+                <!-- Bulk Delete -->
+                <button type="button"
+                        x-show="selected.length > 0"
+                        style="display: none;"
+                        @click="
+                            if (!confirm('Are you sure you want to delete ' + selected.length + ' selected file(s)?')) return;
+                            const form = document.getElementById('bulk-delete-form');
+                            form.querySelectorAll('input[name=\'files[]\']').forEach(el => el.remove());
+                            selected.forEach(f => {
+                                const inp = document.createElement('input');
+                                inp.type = 'hidden';
+                                inp.name = 'files[]';
+                                inp.value = f;
+                                form.appendChild(inp);
+                            });
+                            form.submit();
+                        "
+                        class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete <span x-text="selected.length"></span> File(s)
+                </button>
+                <form id="bulk-delete-form" action="{{ route('logs.fft.bulk_delete') }}" method="POST" style="display:none;">
+                    @csrf
+                    @method('DELETE')
+                </form>
+            </div>
             @endif
         </div>
+
 
         @if(count($archives) > 0)
         <div class="overflow-x-auto">
@@ -112,10 +153,19 @@
                         <td class="px-4 py-3 text-gray-500">{{ date('M d, Y H:i', $archive['last_modified']) }}</td>
                         <td class="px-4 py-3 text-right text-gray-500">{{ number_format($archive['size'] / 1024, 2) }} KB</td>
                         <td class="px-4 py-3 text-right">
-                            <a href="{{ route('logs.fft.download_archive', $archive['filename']) }}" 
-                               class="text-blue-600 hover:text-blue-500 font-medium text-xs">
-                                Download
-                            </a>
+                            <div class="flex items-center justify-end space-x-3">
+                                <a href="{{ route('logs.fft.download_archive', $archive['filename']) }}" 
+                                   class="text-blue-600 hover:text-blue-500 font-medium text-xs">
+                                    Download
+                                </a>
+                                <form action="{{ route('logs.fft.delete_archive', $archive['filename']) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this archive file?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:text-red-500 font-medium text-xs">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     @endforeach

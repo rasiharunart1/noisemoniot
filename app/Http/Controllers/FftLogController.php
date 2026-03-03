@@ -6,6 +6,7 @@ use App\Models\Device;
 use App\Models\FftLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use ZipArchive;
 
 class FftLogController extends Controller
 {
@@ -218,5 +219,42 @@ class FftLogController extends Controller
         $zip->close();
 
         return response()->download($zipPath, $zipFilename)->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Delete archived log CSV
+     */
+    public function deleteArchive($filename)
+    {
+        if (!Storage::exists('exports/logs/' . $filename)) {
+            return redirect()->back()->with('error', 'Archive file not found.');
+        }
+
+        Storage::delete('exports/logs/' . $filename);
+
+        return redirect()->back()->with('success', 'Archive file deleted successfully.');
+    }
+
+    /**
+     * Bulk delete archived logs
+     */
+    public function bulkDeleteArchives(Request $request)
+    {
+        $files = $request->input('files', []);
+        
+        if (empty($files)) {
+            return redirect()->back()->with('error', 'No files selected for deletion.');
+        }
+
+        $deletedCount = 0;
+        foreach ($files as $filename) {
+            $filePath = 'exports/logs/' . $filename;
+            if (Storage::exists($filePath)) {
+                Storage::delete($filePath);
+                $deletedCount++;
+            }
+        }
+
+        return redirect()->back()->with('success', "{$deletedCount} archive file(s) deleted successfully.");
     }
 }

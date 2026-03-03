@@ -19,6 +19,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Devices - Full CRUD
     Route::resource('devices', DeviceController::class);
     Route::post('/devices/{device}/gain', [DeviceController::class, 'updateGain'])->name('devices.gain');
+    Route::post('/devices/{device}/spl-offset', [DeviceController::class, 'updateSplOffset'])->name('devices.spl_offset');
     Route::post('/devices/{device}/threshold', [DeviceController::class, 'updateThreshold'])->name('devices.threshold');
     Route::post('/devices/{device}/record/start', [DeviceController::class, 'startRecording'])->name('devices.record.start');
     Route::post('/devices/{device}/record/stop', [DeviceController::class, 'stopRecording'])->name('devices.record.stop');
@@ -38,6 +39,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/logs/fft/export', [FftLogController::class, 'export'])->name('logs.fft.export');
     Route::get('/logs/fft/archives/{filename}', [FftLogController::class, 'downloadArchive'])->name('logs.fft.download_archive');
     Route::post('/logs/fft/archives/bulk-download', [FftLogController::class, 'bulkDownloadArchives'])->name('logs.fft.bulk_download');
+    // IMPORTANT: bulk-delete must be defined BEFORE {filename} wildcard to avoid route conflict
+    Route::delete('/logs/fft/archives/bulk-delete', [FftLogController::class, 'bulkDeleteArchives'])->name('logs.fft.bulk_delete');
+    Route::delete('/logs/fft/archives/{filename}', [FftLogController::class, 'deleteArchive'])->name('logs.fft.delete_archive');
     Route::delete('/logs/fft/reset', [FftLogController::class, 'destroyAll'])->name('logs.fft.destroy_all');
     
     // Settings

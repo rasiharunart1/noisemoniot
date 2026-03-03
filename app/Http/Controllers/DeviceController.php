@@ -176,6 +176,25 @@ class DeviceController extends Controller
     }
 
     /**
+     * Update device SPL offset (dB calibration value)
+     */
+    public function updateSplOffset(Request $request, Device $device)
+    {
+        $request->validate([
+            'spl_offset' => 'required|numeric|between:-20,80'
+        ]);
+
+        $device->update([
+            'spl_offset' => $request->spl_offset
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'spl_offset' => $device->spl_offset
+        ]);
+    }
+
+    /**
      * Update device threshold
      */
     public function updateThreshold(Request $request, Device $device)

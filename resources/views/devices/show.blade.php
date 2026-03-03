@@ -78,6 +78,27 @@
                     </div>
                 </div>
 
+                <!-- SPL Offset Control -->
+                <div class="mt-4 p-4 rounded-xl bg-gradient-to-br from-purple-500/10 to-indigo-500/10 border border-purple-500/20">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center space-x-2">
+                            <svg class="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m12 4a2 2 0 100-4m0 4a2 2 0 110-4m-6 0v2m0-6V4m6 6v10m-6-2v2m-6-2v2" />
+                            </svg>
+                            <label class="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">SPL Offset (Calibration)</label>
+                        </div>
+                        <span class="text-lg font-black text-purple-600 dark:text-purple-400" id="spl-offset-value">{{ number_format($device->spl_offset ?? 30.0, 1) }} dB</span>
+                    </div>
+                    <input type="range" id="spl-offset-slider" min="-20" max="80" step="0.5"
+                           value="{{ $device->spl_offset ?? 30.0 }}"
+                           class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-600">
+                    <div class="flex justify-between mt-1">
+                        <span class="text-[10px] text-gray-500">-20 dB</span>
+                        <span class="text-[10px] text-purple-500 italic">Default: 30 dB</span>
+                        <span class="text-[10px] text-gray-500">80 dB</span>
+                    </div>
+                </div>
+
                 <!-- Threshold Setting -->
                 <div class="mt-4 p-4 rounded-xl bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/20">
                     <div class="flex items-center justify-between mb-2">
@@ -1064,6 +1085,42 @@
                     if(result.success) console.log('Database: Gain persisted');
                 } catch (err) {
                     console.error('Failed to persist gain:', err);
+                }
+            }, 1000);
+        });
+
+        // --- SPL Offset Slider Logic ---
+        const splOffsetSlider = document.getElementById('spl-offset-slider');
+        const splOffsetValueDisp = document.getElementById('spl-offset-value');
+        let splOffsetTimeout = null;
+
+        splOffsetSlider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value).toFixed(1);
+            splOffsetValueDisp.innerText = val + ' dB';
+
+            clearTimeout(splOffsetTimeout);
+
+            // 1. Instant MQTT Command to ESP32
+            const controlTopic = topic.replace('/data', '/control');
+            const payload = JSON.stringify({ action: 'set_spl_offset', value: parseFloat(val) });
+            client.publish(controlTopic, payload);
+            console.log(`MQTT: Setting SPL offset to ${val} on ${controlTopic}`);
+
+            // 2. Debounced API call to persist in DB
+            splOffsetTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch("{{ route('devices.spl_offset', $device) }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ spl_offset: val })
+                    });
+                    const result = await response.json();
+                    if(result.success) console.log('Database: SPL offset persisted');
+                } catch (err) {
+                    console.error('Failed to persist SPL offset:', err);
                 }
             }, 1000);
         });

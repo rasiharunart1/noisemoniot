@@ -21,6 +21,7 @@ class Device extends Model
         'latitude',
         'longitude',
         'gain',
+        'spl_offset',
         'max_db_spl_threshold',
     ];
 
