@@ -405,7 +405,7 @@
     </div>
 
     <!-- Scheduled Recordings -->
-    <div class="glass-card p-6 rounded-2xl mb-8 relative overflow-hidden" x-data="{ scheduleModalOpen: false }">
+    <div class="glass-card p-6 rounded-2xl mb-8 relative overflow-hidden" x-data="{ scheduleModalOpen: {{ $errors->hasAny(['start_time','end_time','interval_minutes','duration_seconds']) ? 'true' : 'false' }} }">
         <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
 
         <div class="relative z-10">
@@ -501,6 +501,22 @@
                     
                     <form action="{{ route('devices.schedules.store', $device) }}" method="POST" class="space-y-4 relative z-10">
                         @csrf
+
+                        {{-- Validation Errors --}}
+                        @if($errors->hasAny(['start_time', 'end_time', 'interval_minutes', 'duration_seconds']))
+                        <div class="p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                            <ul class="space-y-1">
+                                @foreach($errors->only(['start_time', 'end_time', 'interval_minutes', 'duration_seconds']) as $fieldErrors)
+                                    @foreach((array)$fieldErrors as $error)
+                                    <li class="text-xs text-red-600 dark:text-red-400 flex items-center space-x-1.5">
+                                        <svg class="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                        <span>{{ $error }}</span>
+                                    </li>
+                                    @endforeach
+                                @endforeach
+                            </ul>
+                        </div>
+                        @endif
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Start Time</label>
