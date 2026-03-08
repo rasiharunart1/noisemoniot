@@ -14,7 +14,7 @@ class ScheduleController extends Controller
     public function store(Request $request, Device $device)
     {
         $validated = $request->validate([
-            'start_time' => 'required|date|after_or_equal:now',
+            'start_time' => 'required|date',
             'end_time' => 'required|date|after:start_time',
             'interval_minutes' => 'required|integer|min:1',
             'duration_seconds' => 'required|integer|min:5|max:300',
