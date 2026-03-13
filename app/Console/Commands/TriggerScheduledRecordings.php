@@ -38,9 +38,8 @@ class TriggerScheduledRecordings extends Command
             ->where('end_time', '<', $now)
             ->update(['status' => 'completed']);
 
-        // 2. Fetch active schedules
-        // Start time has passed AND End time has not passed
-        $schedules = RecordingSchedule::where(function($q) {
+        // 2. Fetch active schedules (start_time passed, end_time not yet passed)
+        $schedules = RecordingSchedule::where(function ($q) {
                 $q->where('status', 'pending')
                   ->orWhere('status', 'active');
             })
@@ -52,15 +51,14 @@ class TriggerScheduledRecordings extends Command
         $this->info("Found {$schedules->count()} active schedules.");
 
         foreach ($schedules as $schedule) {
-            // Check interval
+            // Check interval – skip if not yet time for next run
             if ($schedule->last_run_at) {
                 $nextRun = $schedule->last_run_at->copy()->addMinutes($schedule->interval_minutes);
                 if ($now->lessThan($nextRun)) {
-                    continue; // Not time yet
+                    continue;
                 }
             }
 
-            // Time to run!
             $this->triggerRecording($schedule);
         }
     }
@@ -72,48 +70,75 @@ class TriggerScheduledRecordings extends Command
             return;
         }
 
+        $deviceId = $schedule->device->device_id;
+        $topic    = "audio/{$deviceId}/command";
+
         try {
-            // MQTT Config
-            $host = Setting::get('mqtt_host', env('MQTT_HOST'));
-            $port = (int) Setting::get('mqtt_port', env('MQTT_PORT', 8883));
-            $username = Setting::get('mqtt_username', env('MQTT_USERNAME'));
-            $password = Setting::get('mqtt_password', env('MQTT_PASSWORD'));
+            // ── 1. Send START RECORDING ───────────────────────────────────
+            $mqtt = $this->connectMqtt();
 
-            $clientId = 'laravel_scheduler_' . uniqid();
-            $mqtt = new MqttClient($host, $port, $clientId);
+            $mqtt->publish($topic, json_encode([
+                'action'    => 'start_recording',
+                'timestamp' => now()->timestamp,
+                'device_id' => $deviceId,
+            ]), 0);
 
-            $connectionSettings = (new ConnectionSettings)
+            $mqtt->disconnect();
+
+            $this->info("▶ START sent → {$deviceId} (schedule #{$schedule->id})");
+
+            // Mark schedule as active
+            $schedule->update([
+                'last_run_at' => now(),
+                'status'      => 'active',
+            ]);
+
+            // ── 2. Wait for recording duration ────────────────────────────
+            $duration = (int) $schedule->duration_seconds;
+            $this->info("  Waiting {$duration}s...");
+            sleep($duration);
+
+            // ── 3. Send STOP RECORDING ────────────────────────────────────
+            $mqtt = $this->connectMqtt();
+
+            $mqtt->publish($topic, json_encode([
+                'action'    => 'stop_recording',
+                'timestamp' => now()->timestamp,
+                'device_id' => $deviceId,
+            ]), 0);
+
+            $mqtt->disconnect();
+
+            $this->info("⏹ STOP sent  → {$deviceId} (schedule #{$schedule->id})");
+
+        } catch (\Exception $e) {
+            $this->error("Failed to trigger schedule {$schedule->id}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Create and return a connected MqttClient instance.
+     */
+    private function connectMqtt(): MqttClient
+    {
+        $host     = Setting::get('mqtt_host', env('MQTT_HOST'));
+        $port     = (int) Setting::get('mqtt_port', env('MQTT_PORT', 8883));
+        $username = Setting::get('mqtt_username', env('MQTT_USERNAME'));
+        $password = Setting::get('mqtt_password', env('MQTT_PASSWORD'));
+
+        $client = new MqttClient($host, $port, 'laravel_scheduler_' . uniqid());
+
+        $client->connect(
+            (new ConnectionSettings)
                 ->setUsername($username)
                 ->setPassword($password)
                 ->setUseTls(true)
                 ->setTlsSelfSignedAllowed(true)
                 ->setTlsVerifyPeer(false)
-                ->setTlsVerifyPeerName(false);
+                ->setTlsVerifyPeerName(false),
+            true
+        );
 
-            $mqtt->connect($connectionSettings, true);
-
-            // Command Payload
-            $topic = "audio/{$schedule->device->device_id}/command";
-            $payload = json_encode([
-                'action' => 'start_recording',
-                'duration' => $schedule->duration_seconds,
-                'schedule_id' => $schedule->id,
-                'timestamp' => now()->timestamp
-            ]);
-
-            $mqtt->publish($topic, $payload, 0);
-            $mqtt->disconnect();
-
-            // Update Schedule
-            $schedule->update([
-                'last_run_at' => now(),
-                'status' => 'active'
-            ]);
-
-            $this->info("Triggered recording for schedule {$schedule->id} (Device: {$schedule->device->device_id})");
-
-        } catch (\Exception $e) {
-            $this->error("Failed to trigger schedule {$schedule->id}: " . $e->getMessage());
-        }
+        return $client;
     }
 }
