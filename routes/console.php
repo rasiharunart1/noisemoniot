@@ -10,7 +10,10 @@ Artisan::command('inspire', function () {
 use Illuminate\Support\Facades\Schedule;
 use App\Models\Setting;
 
-Schedule::command('schedules:trigger-recordings')->everyMinute();
+Schedule::command('schedules:trigger-recordings')
+    ->everyMinute()
+    ->withoutOverlapping()  // Jangan jalankan lagi jika command sebelumnya masih berjalan (sleep)
+    ->runInBackground();    // Jangan blokir scheduler process utama
 
 // Auto-archive logs (configurable time)
 try {
