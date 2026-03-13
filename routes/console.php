@@ -12,8 +12,7 @@ use App\Models\Setting;
 
 Schedule::command('schedules:trigger-recordings')
     ->everyMinute()
-    ->withoutOverlapping()  // Jangan jalankan lagi jika command sebelumnya masih berjalan (sleep)
-    ->runInBackground();    // Jangan blokir scheduler process utama
+    ->withoutOverlapping(); // Jangan jalankan lagi jika command sebelumnya masih berjalan (sleep)
 
 // Auto-archive logs (configurable time)
 try {
