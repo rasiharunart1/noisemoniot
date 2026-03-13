@@ -11,24 +11,46 @@ use Illuminate\Support\Carbon;
 
 class TriggerScheduledRecordings extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'schedules:trigger-recordings';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Trigger scheduled audio recordings for devices';
 
-    /**
-     * Execute the console command.
-     */
+    // Lock file path – pakai storage/app agar pasti bisa ditulis
+    private string $lockFile;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->lockFile = storage_path('app/schedule-trigger.lock');
+    }
+
     public function handle()
+    {
+        // ── Overlap prevention via lock file ─────────────────────────────
+        if (file_exists($this->lockFile)) {
+            $pid = (int) file_get_contents($this->lockFile);
+            // Cek apakah proses dengan PID tersebut masih berjalan
+            if ($pid > 0 && file_exists("/proc/{$pid}")) {
+                $this->info("Skipping: previous run (PID {$pid}) still active.");
+                return;
+            }
+            // PID sudah tidak aktif, hapus lock lama
+            unlink($this->lockFile);
+        }
+
+        // Tulis PID proses ini ke lock file
+        file_put_contents($this->lockFile, getmypid());
+
+        try {
+            $this->runSchedules();
+        } finally {
+            // Selalu hapus lock file setelah selesai
+            if (file_exists($this->lockFile)) {
+                unlink($this->lockFile);
+            }
+        }
+    }
+
+    private function runSchedules()
     {
         $now = Carbon::now();
 
@@ -38,7 +60,7 @@ class TriggerScheduledRecordings extends Command
             ->where('end_time', '<', $now)
             ->update(['status' => 'completed']);
 
-        // 2. Fetch active schedules (start_time passed, end_time not yet passed)
+        // 2. Fetch schedules that should run now
         $schedules = RecordingSchedule::where(function ($q) {
                 $q->where('status', 'pending')
                   ->orWhere('status', 'active');
@@ -51,7 +73,7 @@ class TriggerScheduledRecordings extends Command
         $this->info("Found {$schedules->count()} active schedules.");
 
         foreach ($schedules as $schedule) {
-            // Check interval – skip if not yet time for next run
+            // Check interval
             if ($schedule->last_run_at) {
                 $nextRun = $schedule->last_run_at->copy()->addMinutes($schedule->interval_minutes);
                 if ($now->lessThan($nextRun)) {
@@ -116,9 +138,6 @@ class TriggerScheduledRecordings extends Command
         }
     }
 
-    /**
-     * Create and return a connected MqttClient instance.
-     */
     private function connectMqtt(): MqttClient
     {
         $host     = Setting::get('mqtt_host', env('MQTT_HOST'));
