@@ -348,4 +348,51 @@ class DeviceController extends Controller
 
         return redirect()->back()->with('error', 'Failed to create ZIP file');
     }
+
+    /**
+     * Delete a single audio recording
+     */
+    public function deleteRecording(AudioRecording $recording)
+    {
+        $filePath = storage_path('app/public/' . $recording->path);
+
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
+
+        $recording->delete();
+
+        return redirect()->back()->with('success', 'Recording deleted successfully');
+    }
+
+    /**
+     * Bulk delete multiple recordings
+     */
+    public function bulkDeleteRecordings(Request $request)
+    {
+        $request->validate([
+            'recording_ids' => 'required|array',
+            'recording_ids.*' => 'exists:audio_recordings,id'
+        ]);
+
+        $recordings = AudioRecording::whereIn('id', $request->recording_ids)->get();
+
+        if ($recordings->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'No recordings found']);
+        }
+
+        $deletedCount = 0;
+        foreach ($recordings as $recording) {
+            $filePath = storage_path('app/public/' . $recording->path);
+
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+
+            $recording->delete();
+            $deletedCount++;
+        }
+
+        return response()->json(['success' => true, 'message' => "$deletedCount recording(s) deleted successfully"]);
+    }
 }

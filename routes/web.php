@@ -30,9 +30,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/devices/{device}/schedules', [ScheduleController::class, 'store'])->name('devices.schedules.store');
     Route::delete('/schedules/{schedule}', [ScheduleController::class, 'destroy'])->name('schedules.destroy');
     
-    // Audio Recordings Download
+    // Audio Recordings Download & Delete
     Route::get('/recordings/{recording}/download', [DeviceController::class, 'downloadRecording'])->name('recordings.download');
     Route::post('/recordings/bulk-download', [DeviceController::class, 'bulkDownload'])->name('recordings.bulk-download');
+    // IMPORTANT: bulk-delete must be defined BEFORE {recording} wildcard to avoid route conflict
+    Route::delete('/recordings/bulk-delete', [DeviceController::class, 'bulkDeleteRecordings'])->name('recordings.bulk-delete');
+    Route::delete('/recordings/{recording}', [DeviceController::class, 'deleteRecording'])->name('recordings.delete');
     
     // FFT Logs
     Route::get('/logs/fft', [FftLogController::class, 'index'])->name('logs.fft');

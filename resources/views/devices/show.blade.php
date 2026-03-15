@@ -753,6 +753,12 @@
                     </svg>
                     <span>Download Selected (<span id="selected-count">0</span>)</span>
                 </button>
+                <button id="delete-selected-btn" class="px-4 py-2 bg-red-100 text-red-600 rounded-lg font-semibold hover:bg-red-200 transition-colors text-sm flex items-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span>Delete Selected</span>
+                </button>
             </div>
         </div>
         <div class="overflow-x-auto">
@@ -793,7 +799,14 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <a href="{{ route('recordings.download', $rec) }}" class="text-red-600 hover:text-red-500 font-medium text-xs">Download</a>
+                                <div class="flex items-center justify-end space-x-3">
+                                    <a href="{{ route('recordings.download', $rec) }}" class="text-red-600 hover:text-red-500 font-medium text-xs">Download</a>
+                                    <button onclick="deleteSingleRecording({{ $rec->id }}, '{{ addslashes($rec->filename) }}')" class="text-gray-400 hover:text-red-500 transition-colors" title="Delete recording">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -1359,6 +1372,60 @@
             document.body.appendChild(form);
             form.submit();
             document.body.removeChild(form);
+        });
+
+        // --- Single Delete Logic ---
+        async function deleteSingleRecording(id, filename) {
+            if (!confirm('Delete recording "' + filename + '"?\nThis action cannot be undone.')) return;
+
+            try {
+                const response = await fetch('/recordings/' + id, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                });
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Failed to delete recording');
+                }
+            } catch (err) {
+                alert('Error deleting recording');
+                console.error(err);
+            }
+        }
+
+        // --- Bulk Delete Logic ---
+        const deleteSelectedBtn = document.getElementById('delete-selected-btn');
+
+        deleteSelectedBtn.addEventListener('click', async () => {
+            const selectedIds = Array.from(document.querySelectorAll('.recording-checkbox:checked'))
+                .map(cb => cb.value);
+
+            if (selectedIds.length === 0) return;
+
+            if (!confirm('Delete ' + selectedIds.length + ' selected recording(s)?\nThis action cannot be undone.')) return;
+
+            try {
+                const response = await fetch("{{ route('recordings.bulk-delete') }}", {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ recording_ids: selectedIds })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    location.reload();
+                } else {
+                    alert('Failed: ' + result.message);
+                }
+            } catch (err) {
+                alert('Error deleting recordings');
+                console.error(err);
+            }
         });
 
         // --- WiFi Management Logic ---
