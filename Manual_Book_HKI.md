@@ -1,7 +1,5 @@
-# NoiseMoniot (Noise Monitor IoT) Web
-
-## BUKU PANDUAN PENGGUNAAN (USER MANUAL)
-**SISTEM MONITORING KEBISINGAN IOT (NOISEMONIOT)**
+# BUKU PANDUAN PENGGUNAAN (USER MANUAL)
+## SISTEM MONITORING KEBISINGAN IOT (NOISEMONIOT)
 
 ---
 
@@ -25,10 +23,10 @@ Sistem ini beroperasi dengan mengintegrasikan perangkat keras mikrokontroler (no
 ### 2. Spesifikasi Sistem
 
 #### Perangkat Keras (Hardware) Node Sensor:
-*   **Mikrokontroler:** ESP32 atau ESP8266
-*   **Sensor Suara (Mikrofon):** Modul I2S INMP441 (atau Modul MSM261S4030H0)
-*   **Penyimpanan Lokal:** Modul MicroSD Card (Untuk menyimpan file format WAV)
-*   **Konektivitas:** Modul Wi-Fi terintegrasi (2.4 GHz)
+*   Mikrokontroler: ESP32 atau ESP8266
+*   Sensor Suara (Mikrofon): Modul I2S INMP441 (atau Modul MSM261S4030H0)
+*   Penyimpanan Lokal: Modul MicroSD Card (Untuk menyimpan file format WAV)
+*   Konektivitas: Modul Wi-Fi terintegrasi (2.4 GHz)
 
 #### Perangkat Lunak (Software) Utama Server:
 *   **Sistem Operasi:** Linux (Ubuntu / Debian / CentOS)
@@ -53,7 +51,7 @@ Arsitektur aplikasi terbagi menjadi tiga komponen utama:
 ### 4. Fitur Utama
 
 1.  **Dashboard Visualisasi Real-Time:** Menampilkan grafik tingkat kebisingan (SPL) dari berbagai perangkat secara _real-time_.
-2.  **Manajemen Perangkat (Device Management):** Modul untuk menambah, mengedit parameter kalibrasi (SPL Offset), dan menghapus _node device_.
+2.  **Manajemen Perangkat (Device Management):** Modul untuk menambah, mengedit parameter kalibrasi (SPL Offset), dan menghadapus _node device_.
 3.  **Local Web Standalone:** Konfigurasi awal perangkat keras (kredensial Wi-Fi & MQTT) langsung pada Local UI ESP32/ESP8266 tanpa bergantung pada akses _server_ utama.
 4.  **Rekaman Audio Terjadwal (Scheduled Recording):** Penjadwalan perekaman suara dari jarak jauh. Pengguna dapat mengatur otomatisasi kapan _node device_ memulai dan memberhentikan perekaman audio.
 5.  **Manajemen File Audio:** Pengguna dapat memutar, mengunduh tunggal, menghapus satuan, dan penghapusan massal (Bulk Delete) terhadap arsip rekaman audio yang dikumpulkan alat.
@@ -71,33 +69,21 @@ Bagi _System Administrator_ atau teknisi IT, berikut langkah _deployment_ pada _
 
 **B. Langkah Instalasi Berurutan**
 1.  **Kloning Repositori:** Tarik pembaruan terakhir dari repository.
-    ```bash
-    git pull origin main
-    ```
+    `git pull origin main`
 2.  **Install Dependensi:** Konfigurasi komponen PHP dan Frontend.
-    ```bash
-    composer install --no-dev --optimize-autoloader
-    npm install && npm run build
-    ```
+    `composer install --no-dev --optimize-autoloader`
+    `npm install && npm run build`
 3.  **Migrasi Database:** Buat struktur dan tabel _database_.
-    ```bash
-    php artisan migrate --force
-    ```
+    `php artisan migrate --force`
 4.  **Hak Akses:** Penyesuaian izin direktori penyimpanan _cache_ dan _upload_.
-    ```bash
-    chmod -R 775 storage bootstrap/cache
-    chown -R www-data:www-data storage bootstrap/cache
-    ```
+    `chmod -R 775 storage bootstrap/cache`
+    `chown -R www-data:www-data storage bootstrap/cache`
 5.  **Konfigurasi Environment:** Modifikasi `.env` untuk konfigurasi koneksi MQTT Broker dan Database, lalu simpan:
-    ```bash
-    php artisan config:cache
-    ```
+    `php artisan config:cache`
 6.  **Manajemen Konfigurasi Supervisor:**
     Gunakan script _setup_ otomatis yang telah disediakan untuk menjalankan _MQTT Listener_ dan penjadwalan.
-    ```bash
-    sudo bash setup-supervisor.sh
-    supervisorctl restart all
-    ```
+    `sudo bash setup-supervisor.sh`
+    `supervisorctl restart all`
 
 ---
 
@@ -118,7 +104,7 @@ Bagi _System Administrator_ atau teknisi IT, berikut langkah _deployment_ pada _
 1.  Nyalakan perangkat mikrokontroler untuk pertama kali.
 2.  Gunakan _smartphone_/laptop, hubungkan ke jaringan Access Point (AP) bernama "NoiseMoniot-AP".
 3.  Buka web browser dan akses IP lokal bawaan perangkat `192.168.4.1`.
-4.  Masukkan kredensial otentikasi mandiri. Konfigurasikan SSID Wi-Fi lokal, kredensial MQTT Cloud, dan klik **Save**. Alat akan melakukan _restart_ dan otomatis terhubung.
+4.  Masukkan kredensial otentikasi mandiri. Konfigurasikan SSID Wi-Fi lokal, kredensial MQTT Cloud, dan _Save_. Alat akan melakukan _restart_ dan otomatis terhubung.
 
 #### D. Membaca Grafik dan Log Kebisingan
 1.  Pada Dashboard, pilih perangkat spesifik dari tabel perangkat aktif.
