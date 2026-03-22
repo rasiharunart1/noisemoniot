@@ -1,122 +1,175 @@
-# BUKU PANDUAN PENGGUNAAN (USER MANUAL)
+# BUKU PANDUAN PENGGUNAAN (USER MANUAL) KOMPREHENSIF
 ## SISTEM MONITORING KEBISINGAN IOT (NOISEMONIOT)
 
 ---
+> **Catatan Pengeditan HKI:** Silakan ganti teks `[Masukkan Screenshot ...]` dengan gambar tangkapan layar (screenshot) asli dari aplikasi Anda menggunakan kombinasi tombol `Windows + Shift + S` lalu tempel (Paste) pada dokumen ini, sebelum menyimpannya ke format PDF.
 
 ### DAFTAR ISI
 1. [Pendahuluan](#1-pendahuluan)
-2. [Spesifikasi Sistem](#2-spesifikasi-sistem)
-3. [Arsitektur Sistem](#3-arsitektur-sistem)
-4. [Fitur Utama](#4-fitur-utama)
-5. [Panduan Instalasi dan Deployment](#5-panduan-instalasi-dan-deployment)
-6. [Panduan Penggunaan Aplikasi](#6-panduan-penggunaan-aplikasi)
+2. [Glosarium (Daftar Istilah)](#2-glosarium-daftar-istilah)
+3. [Spesifikasi Sistem dan Persyaratan Minimum](#3-spesifikasi-sistem-dan-persyaratan-minimum)
+4. [Topologi dan Arsitektur Sistem](#4-topologi-dan-arsitektur-sistem)
+5. [Panduan Langkah Demi Langkah Modul Web Dashboard](#5-panduan-langkah-demi-langkah-modul-web-dashboard)
+6. [Panduan Konfigurasi Standalone Local Node](#6-panduan-konfigurasi-standalone-local-node)
+7. [Panduan Instalasi Server dan Deployment](#7-panduan-instalasi-server-dan-deployment)
+8. [Pemecahan Masalah (Troubleshooting)](#8-pemecahan-masalah-troubleshooting)
 
 ---
 
 ### 1. Pendahuluan
-**NoiseMoniot (Noise Monitor IoT)** adalah sebuah sistem aplikasi berbasis _Internet of Things_ (IoT) dan platform Web yang dirancang secara khusus untuk memonitor, merekam, dan menganalisis tingkat kebisingan (Sound Pressure Level / SPL) di suatu lingkungan. Sistem ini memungkinkan pengguna untuk melakukan pemantauan jarak jauh secara _real-time_, mengatur jadwal rekaman audio otomatis, hingga mengekspor data historis log sensor untuk keperluan analisis lebih lanjut.
+**NoiseMoniot (Noise Monitor IoT)** adalah sebuah sistem aplikasi berbasis _Internet of Things_ (IoT) dan platform Web yang dikembangkan untuk memonitor, merekam, dan menganalisis tingkat kebisingan (Sound Pressure Level / SPL) di suatu lingkungan industri atau publik secara presisi dan waktu nyata (real-time). 
 
-Sistem ini beroperasi dengan mengintegrasikan perangkat keras mikrokontroler (node sensor) dengan peladen (server) melalui protokol komunikasi MQTT yang ringan dan cepat.
-
----
-
-### 2. Spesifikasi Sistem
-
-#### Perangkat Keras (Hardware) Node Sensor:
-*   Mikrokontroler: ESP32 atau ESP8266
-*   Sensor Suara (Mikrofon): Modul I2S INMP441 (atau Modul MSM261S4030H0)
-*   Penyimpanan Lokal: Modul MicroSD Card (Untuk menyimpan file format WAV)
-*   Konektivitas: Modul Wi-Fi terintegrasi (2.4 GHz)
-
-#### Perangkat Lunak (Software) Utama Server:
-*   **Sistem Operasi:** Linux (Ubuntu / Debian / CentOS)
-*   **Web Server:** Nginx atau Apache
-*   **Bahasa Pemrograman Backend:** PHP 8.1+ dan Framework Laravel
-*   **Bahasa Pemrograman Frontend:** JavaScript, Node.js, NPM, TailwindCSS
-*   **Database:** PostgreSQL atau MySQL
-*   **Protokol Komunikasi:** MQTT Broker (Misal: HiveMQ, EMQX, atau Mosquitto)
-*   **Manajemen Background Process:** Supervisor (Untuk MQTT Listener dan Laravel Scheduler)
+Aplikasi ini menyajikan solusi ujung-ke-ujung (end-to-end), dimulai dari pembacaan data desibel oleh sensor mikrokontroler di lapangan, hingga penyajian grafik analitik dan fasilitas penugasan perekam suara mandiri pada pusat kontrol berbasis web yang dapat diakses dari mana saja.
 
 ---
 
-### 3. Arsitektur Sistem
-
-Arsitektur aplikasi terbagi menjadi tiga komponen utama:
-1.  **Node Sensor (ESP32/ESP8266):** Bertugas membaca kondisi akustik melalui I2S mikrofon, menghitung tingkat tekanan suara (SPL) dalam satuan decibel (dB), serta merekam audio mentah ke dalam SD Card dalam format WAV. Data log sensor dikirim ke cloud via protokol MQTT.
-2.  **Platform Komunikasi (MQTT Broker):** Perantara jalur distribusi pesan berkecepatan tinggi dengan latensi rendah dari berbagai node sensor menuju peladen utama.
-3.  **Peladen Aplikasi Utama (Web Dashboard):** Dibangun menggunakan Laravel. Memiliki _MQTT Listener service_ yang berjalan di _background_ untuk menerima dan menyimpan data sensor ke _database_. Menyediakan antarmuka (UI) bagi pengguna untuk manajemen _device_ dan visualisasi data.
-
----
-
-### 4. Fitur Utama
-
-1.  **Dashboard Visualisasi Real-Time:** Menampilkan grafik tingkat kebisingan (SPL) dari berbagai perangkat secara _real-time_.
-2.  **Manajemen Perangkat (Device Management):** Modul untuk menambah, mengedit parameter kalibrasi (SPL Offset), dan menghadapus _node device_.
-3.  **Local Web Standalone:** Konfigurasi awal perangkat keras (kredensial Wi-Fi & MQTT) langsung pada Local UI ESP32/ESP8266 tanpa bergantung pada akses _server_ utama.
-4.  **Rekaman Audio Terjadwal (Scheduled Recording):** Penjadwalan perekaman suara dari jarak jauh. Pengguna dapat mengatur otomatisasi kapan _node device_ memulai dan memberhentikan perekaman audio.
-5.  **Manajemen File Audio:** Pengguna dapat memutar, mengunduh tunggal, menghapus satuan, dan penghapusan massal (Bulk Delete) terhadap arsip rekaman audio yang dikumpulkan alat.
-6.  **Ekspor Log Otomatis:** Fitur _Cron Job / Scheduler_ yang mengekspor data (_Sensor Logs_) harian menjadi format Excel (XLSX) untuk kemudahan pelaporan dan pencatatan eksperimen histeresis.
+### 2. Glosarium (Daftar Istilah)
+*   **IoT (Internet of Things):** Konsep komputasi untuk mendeskripsikan perangkat fisik (sensor) yang terhubung ke internet untuk bertukar data.
+*   **SPL (Sound Pressure Level):** Ukuran logaritmik dari tekanan suara efektif dari suatu bunyi terhadap nilai referensi. Dinyatakan dalam satuan **Decibel (dB)**.
+*   **MQTT (Message Queuing Telemetry Transport):** Protokol pesan ringan yang dirancang untuk sensor IoT guna pengiriman pertukaran data secara _Publish_ dan _Subscribe_.
+*   **MicroSD:** Media penyimpanan data secara lokal di perangkat keras untuk menampung ukuran besar rekaman audio berekstensi `.wav`.
+*   **Standalone Auth / Local Node UI:** Portal antarmuka web statis bawaan milik mikrokontroler (ESP32) yang dapat diakses luring untuk keperluan modifikasi koneksi jaringan (tanpa harus memodifikasi penulisan kode sumber).
 
 ---
 
-### 5. Panduan Instalasi dan Deployment
+### 3. Spesifikasi Sistem dan Persyaratan Minimum
 
-Bagi _System Administrator_ atau teknisi IT, berikut langkah _deployment_ pada _production server_:
-
-**A. Pra-Syarat Instalasi**
-*   Server Linux siap pakai dengan dependensi web (LEMP/LAMP Stack).
-*   _Repository_ Git _source code_ NoiseMoniot.
-
-**B. Langkah Instalasi Berurutan**
-1.  **Kloning Repositori:** Tarik pembaruan terakhir dari repository.
-    `git pull origin main`
-2.  **Install Dependensi:** Konfigurasi komponen PHP dan Frontend.
-    `composer install --no-dev --optimize-autoloader`
-    `npm install && npm run build`
-3.  **Migrasi Database:** Buat struktur dan tabel _database_.
-    `php artisan migrate --force`
-4.  **Hak Akses:** Penyesuaian izin direktori penyimpanan _cache_ dan _upload_.
-    `chmod -R 775 storage bootstrap/cache`
-    `chown -R www-data:www-data storage bootstrap/cache`
-5.  **Konfigurasi Environment:** Modifikasi `.env` untuk konfigurasi koneksi MQTT Broker dan Database, lalu simpan:
-    `php artisan config:cache`
-6.  **Manajemen Konfigurasi Supervisor:**
-    Gunakan script _setup_ otomatis yang telah disediakan untuk menjalankan _MQTT Listener_ dan penjadwalan.
-    `sudo bash setup-supervisor.sh`
-    `supervisorctl restart all`
+| Kategori | Spesifikasi Komponen | Fungsi Utama |
+| :--- | :--- | :--- |
+| **Piranti Keras (Hardware)** | Mikrokontroler **ESP32** atau ESP8266 | Otak pemrosesan lokal logika node alat |
+| | Sensor Mikrofon I2S (**INMP441** / MSM261S4030H0) | Perekam gelombang dan frekuensi audio presisi tinggi |
+| | Modul MicroSD Card Reader | Media penyimpanan fisik (Offline / Internal Storage) file suara tipe WAV |
+| **Piranti Lunak Frontend** | Node.js (Vite), TailwindCSS, Blade Components | Mengelola tata letak dan interaksi (_User Interface_) di browser |
+| **Piranti Lunak Backend** | PHP 8.1+, Framework **Laravel 10/11** | Mengelola autentikasi, API, dan logika penyimpanan ke pangkalan data |
+| **Pangkalan Data (Database)**| **MySQL** 8.0 / PostgreSQL 14+ | Relasi penyimpan seluruh _history_ log SPL Sensor dan akun |
+| **Komunikasi (Middleware)** | MQTT Broker (misal: HiveMQ/Mosquitto) | Menjadi jembatan pesan antara ESP32 dan Backend Laravel |
+| **Service Background** | Supervisor (Linux daemon) | Mengelola agar Laravel Scheduler (Cron) & Listener terus hidup |
 
 ---
 
-### 6. Panduan Penggunaan Aplikasi
+### 4. Topologi dan Arsitektur Sistem
 
-#### A. Login Sistem
-1.  Buka aplikasi melalui _browser_ dengan menginput alamat URL aplikasi (misal: `https://diklat.mdpower.io`).
-2.  Masukkan _Username_ dan _Password_ administrator yang telah terdaftar.
-3.  Klik **Login**. Pengguna akan diarahkan ke Dashboard utama.
+Aliran data pada sistem NoiseMoniot bekerja melalui skema **_Three-Tier Architecture_** sebagai berikut:
 
-#### B. Menambahkan dan Konfigurasi Device
-1.  Arahkan menu navigasi ke **Device Management**.
-2.  Klik **Tambahkan Device Baru**.
-3.  Masukkan _Device ID_ (Harus sama dengan ID di dalam kode EPS32/ESP8266), nama lokasi, dan nilai penyesuaian kalibrasi (misal: "SPL Offset: -3.5" jika mikrofon terlalu peka).
-4.  Klik **Simpan**.
+```mermaid
+graph TD
+    A[Modul Mikrofon INMP441] -->|Acoustic Waves ke Data Digital| B(ESP32 / ESP8266 Node)
+    B -->|Menyimpan Audio .WAV| C[(SD Card Module)]
+    B -->|Publish Sensor Log db via Wi-Fi| D((MQTT Broker Cloud))
+    E[Laravel MQTT Listener Service] -->|Subscribe Topik| D
+    E -->|Simpan Log Data| F[(Database MySQL/PostgreSQL)]
+    F -->|Query & Analytics| G[Web Dashboard Laravel]
+    G -->|Tampilkan Grafik| H[Pengguna/Admin]
+    G -->|Trigger Perekaman via Cloud| D
+```
 
-#### C. Konfigurasi Standalone Node (Local UI)
-1.  Nyalakan perangkat mikrokontroler untuk pertama kali.
-2.  Gunakan _smartphone_/laptop, hubungkan ke jaringan Access Point (AP) bernama "NoiseMoniot-AP".
-3.  Buka web browser dan akses IP lokal bawaan perangkat `192.168.4.1`.
-4.  Masukkan kredensial otentikasi mandiri. Konfigurasikan SSID Wi-Fi lokal, kredensial MQTT Cloud, dan _Save_. Alat akan melakukan _restart_ dan otomatis terhubung.
+1.  **Level Node:** Suara ditangkap mikrofon I2S -> Diproses dengan Fast Fourier Transform (FFT) oleh ESP32 menjadi nilai dB (SPL) -> Dikalkulasikan dengan nilai koefisien/offset -> Dikirim via Wi-Fi ke MQTT.
+2.  **Level Transport:** Ekosistem _Message Broker_ (MQTT) menerima data log di topik spesifik untuk kemudian didengarkan (Subscribe) oleh Server Backend secara terus menerus (Listener Service).
+3.  **Level Server:** Log disimpan di Database. Platform Laravel lalu menyajikan rekam jejak tersebut melalui halaman interaktif. Pengguna di Web juga dapat mereverse-instruksi (mengatur instruksi Start Recording) dari Dashboard, dimana _Listener_ di aplikasi kembali mem-publis pesan MQTT yang akan membangkitkan rutinitas rekam audio fisik di ESP32.
 
-#### D. Membaca Grafik dan Log Kebisingan
-1.  Pada Dashboard, pilih perangkat spesifik dari tabel perangkat aktif.
-2.  Aplikasi akan menampilkan grafik sebaran tingkat kebisingan dalam rentang jam tertentu.
-3.  Pembaruan grafik berjalan secara periodik.
+---
 
-#### E. Menggunakan Fitur Rekam Audio (Audio Recording)
-1.  Buka halaman **Detail Device**.
-2.  Di layar, terdapat antarmuka **Manual Recording Kontrol**. Klik **Start Recording** untuk memerintahkan sensor merekam ke SD Card-nya secara *remote*.
-3.  Klik **Stop Recording** untuk mengakhiri.
-4.  Untuk penjadwalan: Masuk ke menu **Schedules**, atur jam awal rekam dan lama durasi rekaman, aplikasi akan mengirimkan instruksi otomatis melalui _Scheduler Background Service_.
+### 5. Panduan Langkah Demi Langkah Modul Web Dashboard
 
-#### F. Ekspor Laporan Excel
-*   **Otomatis:** Aplikasi menjalankan jadwal _Cron Job Auto Export_ setiap malam yang akan mengarsipkan data sensor ke format `.xlsx`.
-*   **Manual:** Admin masuk ke menu **Logs / Reports**, pilih rentang waktu kalender, kemudian klik tombol **Export Data (Excel)** untuk mengunduh log bacaan _Sound Pressure Level_ ke komputer lokal.
+#### A. Otentikasi dan Login
+Sistem web portal dilindungi dengan mekanisme kredensial berbasis sesi berganda.
+1.  Buka *Web Browser* modern (Chrome/Edge/Firefox). Ketikkan IP Lokal server bawaan (`http://127.0.0.1:8000`) atau domain produksi yang ditentukan.
+2.  Sistem segera menolak akses anonim dan akan meredirect layar ke **Formulir Otentikasi Otomatis (Login)**.
+    > `[Masukkan Screenshot 1: Halaman Formulir Login dengan isian username dan password]`
+3.  Isikan alamat pos-el (e-mail) dan kata sandi otoritatif. Tekan tuas **Sign in / Login**.
+
+#### B. Observasi Dashboard Utama (Ikhtisar)
+Panel Beranda adalah kompendium eksekutif sistem yang memberi kesan pemantauan seketika atas seluruh titik mesin yang disebar.
+1.  Setelah validasi berhasil, Anda akan disambut oleh deretan **Widget Informasi**. Kolom hijau/merah menandakan mana alat-alat _(nodes)_ yang sinkron (*Online*) dan mana yang terputus koneksi.
+    > `[Masukkan Screenshot 2: Panel Utama / Dashboard yang menyajikan summary widget]`
+2.  Perhatikan **Tabel Status Terkini** di bagian tengan beranda; ini memperlihatkan nilai angka tegangan *Noise/Sound Pressure Level* di waktu ter-mutakhir dari masing-masing alat.
+
+#### C. Penugasan & Manajemen Konfigurasi Alat (Devices)
+Administrator memiliki kontrol total menambah dan memperbaiki kalkulasi alat secara per-unit agar tetap selaras.
+1.  Klik menu samping kiri (*Sidebar Menu*) berlabel **"Devices"** (Perangkat).
+2.  Klik opsi **"Tambah Device Baru"**. Layar pop-up (Modal Form) terbuka.
+    > `[Masukkan Screenshot 3: Antarmuka Form Penambahan Devices]`
+3.  Ketikkan **Device ID** (Kode MAC Address spesifik mikrokontroler yang telah didaftarkan dalam koding). Jangan sampai salah huruf.
+4.  Ketikkan Label Nama Ruangan (misalnya: "Genset Timur"), lalu Anda dipersilakan menyesuaikan kurva kepekaan dengan **Memasukkan _SPL Offset_**. (Contoh isi: 2.0 atau -1.5). Ini krusial sebagai nilai penambah baku kalibrasi *hysteresis*.
+5.  Tekan **Simpan**.
+
+#### D. Monitoring Time-Series dan Grafik Kebisingan Berjalan
+1.  Masuk ke halaman Profil suatu alat yang spesifik. Di panel ini terdapat bagan **Line Chart (Grafik Garis)** fluktuasi level tekanan bunyi (dB).
+    > `[Masukkan Screenshot 4: Representasi Data Grafik Real-Time SPL Chart]`
+2.  Indikator vertikal merepresentasikan skala amplitudo *Decibel*, sedangkan jalur horisontal menggambarkan waktu. Titik-titik ekstrem yang memuncak memberi tahu admin kapan suara keras yang ganjil (berbahaya) terjadi pada area tersebut.
+
+#### E. Fitur Komando Rekam Audio Interaktif (Audio Recorder Control)
+Ini merupakan jantung dari fungsi sistem di mana intervensi manusia atau *server* bisa mengambil sampel faktual audio ruangan yang dituju secara manual.
+1.  Buka panel navigasi menuju tab khusus **Audio Recording** dari suatu alat. 
+    > `[Masukkan Screenshot 5: Panel Kendali Manual Audio Recording START dan STOP]`
+2.  Tekan tombol berlabel **"Start Recording"** (Mulai Rekam). Server mengeksekusi paket MQTT. Alat fisik di lokasi (ESP32) yang menerima instruksi tersebut akan mengawali rutinitas membakar suara masuk ke SD-Card (Menulis WAV Header).
+3.  Tekan tombol berlabel **"Stop Recording"**. Rekaman terhenti dan ditutup secara sempurna.
+    > `[Masukkan Screenshot 6: Tabel Daftar Riwayat Rekaman]`
+4.  Beralih ke tab tabel rekaman bawaan. Di sini akan muncul *file* baru. Anda diizinkan memutar, mendengarkan kembali secara *streaming* hasil rekamannya, atau mengunduhnya secara permanen.
+
+#### F. Fitur Penjadwalan Otomatis (Cron Scheduled Record)
+1.  Pilih menu navigasi sisi berlabel **"Schedules (Jadwal)"**.
+    > `[Masukkan Screenshot 7: Dashboard Konfigurator Schedule Waktu Perekaman]`
+2.  Modul ini membedakan alat ini di pasaran. Anda tak perlu memencet tombol rekam tiap pukul empat sore. 
+3.  Klik "Buat Jadwal Baru". Pilih alat *target*, lalu atur penanda waktu pada parameter **Waktu Jam Mulai** serta isikan berapa menit takar jeda durasi (Disediakan menu *dropdown*).
+4.  Background task di sistem Linux/Windows peladen akan selalu bersiaga memeriksa jadwal dan otomatis men-trigger langkah poin "E(2)".
+
+#### G. Pusat Pelaporan dan Ekstraksi Spreadsheet (Excel)
+1.  Masuk pada segmen navigasi **"Reports/Logs"**.
+    > `[Masukkan Screenshot 8: Komponen Formulir Ekspor Excel]`
+2.  Tentukan parameter kurun waktu dengan menekan kalender pop-up kustom (Misal: Tanggal 1 - 5 Juni). Pilih target ID Perangkat jika hanya menginginkan data singularitas alat tertentu.
+3.  Tekan **Eksport Ke Excel / Unduh**.
+4.  Himpunan puluhan ribu _log database MySQL_ akan dipadatkan dan diunduh ke bentuk kolom _Microsoft Excel_ (`.xlsx`) siap olah untuk keperluan pemeliharaan prediktif (Predictive Maintenance).
+
+---
+
+### 6. Panduan Konfigurasi Standalone Local Node
+Fasilitas istimewa pada mikrokontroler **ESP32/ESP8266** dari NoiseMoniot yang bisa beroperasi ganda. Bila alat baru saja dibawa ke lokasi ber-WiFi baru, Anda tidak perlu mengubah kode program (_compile_ ulang _firmware_). Cukup manfaatkan server kecil buatan internal _chip_ tersebut.
+
+**Langkah Penyelarasan Standalone:**
+1.  Nyalakan Modul Komponen ESP32 dengan sumber listrik (5V Adaptor/USB). Saat tidak mendapat sinyal, ia akan memancarkan spektrum nirkabelnya sendiri yang bertindak sebagai _Access Point (Router)_.
+2.  Ambil laptop/ponsel dari sakunya, cari dan *hubungkan sinyal Wi-Fi bernama "NoiseMoniot-AP"*.
+3.  Jalankan browser lokal dan perintahkan _url_ gateway bawaan: **`http://192.168.4.1`**.
+    > `[Masukkan Screenshot 9: Portal Otentikasi Login Perangkat Lokal (Standalone Auth)]`
+4.  Ketik masuk kredensial _Username_ rahasia teknisi (_default hardcode_ pabrik alat) guna membuka gembok pelindung antarmuka. 
+5.  Setelah Anda diizinkan lewat, Portal Konfigurator WiFi dan MQTT terbuka seketika.
+    > `[Masukkan Screenshot 10: Tampilan Form Isian SSID, Password Wi-Fi dan Informasi Server Broker]`
+6.  Salin dan isikan informasi Wi-Fi ruang target lengkap dengan sandinya, serta Hostname beserta sandi protokol layanan langganan _MQTT Cloud_.
+7.  Tekan tombol **"Save Configuration"**. ESP32 alat akan _reboot_ sendiri dan meresap secara permanen ke router utama lokasi layaknya piranti lokal sah. _Access Point darurat terhapus secara sendirinya dengan apik_.
+
+---
+
+### 7. Panduan Instalasi Server dan Deployment
+*(Informasi Teknis Untuk System Administrator)*
+
+Bagi Administrator guna melakukan pemeliharaan pada PC Induk atau OS Produksi (Misal: Ubuntu Cloud VM).
+1. Tarik modul integrasi terkini
+   `git pull origin main`
+2. Pasang prasyarat PHP dan *library frontend*
+   `composer install --no-dev --optimize-autoloader`
+   `npm install && npm run build`
+3. Ratakan tabel pangkalan data di repositori kosong
+   `php artisan migrate --force`
+   `php artisan optimize:clear`
+4. Normalisasi kebijakan otorisasi hak baca/tulis bundel program untuk izin _www-data_
+   `chmod -R 775 storage bootstrap/cache`
+   `chown -R www-data:www-data storage bootstrap/cache`
+5. Eksekutor _listener_: Pasang berkas `setup-supervisor.sh` lalu restart layanan guna menjaga kestabilan MQTT Daemon Listener di pinggir sistem:
+   `sudo bash setup-supervisor.sh`
+   `supervisorctl restart all`
+
+---
+
+### 8. Pemecahan Masalah (Troubleshooting)
+
+**Indikasi 1: Alat Tampak _Offline_ Namun Lampu Hidup.**
+*   Penyebab: Kredensial Wi-Fi berubah di lokasi, atau Broker MQTT server Cloud mati._
+*   Solusi: Lakukan prosedur "Panduan Konfigurasi Standalone Local Node" di atas untuk memperbarui nama SSID dan Password _Router Wi-Fi_. Alternatif, restart *Supervisor* MQTT Listener di Server Pusat.
+
+**Indikasi 2: Audio Terekam di SD Card Berukuran Nol (*0 Bytes*).**
+*   Penyebab: Rangkaian pin kelistrikan protokol I2S antara mikrofon INMP441 dengan ESP32 tidak tersambung sempurna / ada soket lepas (Hardware error), ATAU Modul MicroSD _corrupt_ dan _WAV Header_ tidak sukses diposisikan pada alamat 0 saat penutupan File_.
+*   Solusi: Ganti fisik MicroSD, pastikan format dasarnya adalah _FAT32_. Kencangkan solder soket male-to-female pin I2S antara alat baca bunyi dan _board_ utama.
+
+**Indikasi 3: Fitur Export ke Excel Selalu Gagal/Blank.**
+*   Penyebab: Ukuran *records database* terlalu besar melebihi alokasi memori PHP (Limit Exceeded) dalam kurun waktu ekspor rentang *query*.
+*   Solusi: Perkecil saringan batas hari melalui _Filter Bar_. Sebaiknya Unduh eksportasi Excel tersebut per-2 atau 4 hari kalender kerja, ketimbang merentang 1 bulan penuh yang mengakibatkan _Timeout_. Bagi teknisi *IT backend*, silakan perbesar batasan _Memory Limit_ (cth: `memory_limit = 512M`) dalam setelan `/etc/php/8.x/fpm/php.ini`.
