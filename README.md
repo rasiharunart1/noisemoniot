@@ -43,6 +43,9 @@ Aplikasi ini menyajikan solusi ujung-ke-ujung (end-to-end), dimulai dari pembaca
 | **Service Background** | Supervisor (Linux daemon) | Mengelola agar Laravel Scheduler (Cron) & Listener terus hidup |
 
 ---
+<img width="1375" height="694" alt="WIRING DIAGRAM NOISEMON DEVICE" src="https://github.com/user-attachments/assets/97c1ee9a-35c9-43c9-8559-3c9054caa8cc" />
+
+
 
 ### 4. Topologi dan Arsitektur Sistem
 
