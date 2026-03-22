@@ -51,17 +51,8 @@ Aplikasi ini menyajikan solusi ujung-ke-ujung (end-to-end), dimulai dari pembaca
 
 Aliran data pada sistem NoiseMoniot bekerja melalui skema **_Three-Tier Architecture_** sebagai berikut:
 
-```mermaid
-graph TD
-    A[Modul Mikrofon INMP441] -->|Acoustic Waves ke Data Digital| B(ESP32 / ESP8266 Node)
-    B -->|Menyimpan Audio .WAV| C[(SD Card Module)]
-    B -->|Publish Sensor Log db via Wi-Fi| D((MQTT Broker Cloud))
-    E[Laravel MQTT Listener Service] -->|Subscribe Topik| D
-    E -->|Simpan Log Data| F[(Database MySQL/PostgreSQL)]
-    F -->|Query & Analytics| G[Web Dashboard Laravel]
-    G -->|Tampilkan Grafik| H[Pengguna/Admin]
-    G -->|Trigger Perekaman via Cloud| D
-```
+<img width="4151" height="3339" alt="WiFi Loadcell Data-2026-03-22-233100" src="https://github.com/user-attachments/assets/5522e70b-ac88-4a16-87d6-063dce3ca6dd" />
+
 
 1.  **Level Node:** Suara ditangkap mikrofon I2S -> Diproses dengan Fast Fourier Transform (FFT) oleh ESP32 menjadi nilai dB (SPL) -> Dikalkulasikan dengan nilai koefisien/offset -> Dikirim via Wi-Fi ke MQTT.
 2.  **Level Transport:** Ekosistem _Message Broker_ (MQTT) menerima data log di topik spesifik untuk kemudian didengarkan (Subscribe) oleh Server Backend secara terus menerus (Listener Service).
