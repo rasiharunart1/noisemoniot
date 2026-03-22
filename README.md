@@ -133,10 +133,10 @@ Fasilitas istimewa pada mikrokontroler **ESP32/ESP8266** dari NoiseMoniot yang b
 1.  Nyalakan Modul Komponen ESP32 dengan sumber listrik (5V Adaptor/USB). Saat tidak mendapat sinyal, ia akan memancarkan spektrum nirkabelnya sendiri yang bertindak sebagai _Access Point (Router)_.
 2.  Ambil laptop/ponsel dari sakunya, cari dan *hubungkan sinyal Wi-Fi bernama "NoiseMoniot-AP"*.
 3.  Jalankan browser lokal dan perintahkan _url_ gateway bawaan: **`http://192.168.4.1`**.
-    > `[Masukkan Screenshot 9: Portal Otentikasi Login Perangkat Lokal (Standalone Auth)]`
 4.  Ketik masuk kredensial _Username_ rahasia teknisi (_default hardcode_ pabrik alat) guna membuka gembok pelindung antarmuka. 
 5.  Setelah Anda diizinkan lewat, Portal Konfigurator WiFi dan MQTT terbuka seketika.
-    > `[Masukkan Screenshot 10: Tampilan Form Isian SSID, Password Wi-Fi dan Informasi Server Broker]`
+    > <img width="1742" height="788" alt="image" src="https://github.com/user-attachments/assets/bda48ea3-f625-4663-a4a7-0d40474d15f1" />
+
 6.  Salin dan isikan informasi Wi-Fi ruang target lengkap dengan sandinya, serta Hostname beserta sandi protokol layanan langganan _MQTT Cloud_.
 7.  Tekan tombol **"Save Configuration"**. ESP32 alat akan _reboot_ sendiri dan meresap secara permanen ke router utama lokasi layaknya piranti lokal sah. _Access Point darurat terhapus secara sendirinya dengan apik_.
 
