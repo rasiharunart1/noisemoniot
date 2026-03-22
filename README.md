@@ -1,9 +1,6 @@
 # BUKU PANDUAN PENGGUNAAN (USER MANUAL) KOMPREHENSIF
 ## SISTEM MONITORING KEBISINGAN IOT (NOISEMONIOT)
 
----
-> **Catatan Pengeditan HKI:** Silakan ganti teks `[Masukkan Screenshot ...]` dengan gambar tangkapan layar (screenshot) asli dari aplikasi Anda menggunakan kombinasi tombol `Windows + Shift + S` lalu tempel (Paste) pada dokumen ini, sebelum menyimpannya ke format PDF.
-
 ### DAFTAR ISI
 1. [Pendahuluan](#1-pendahuluan)
 2. [Glosarium (Daftar Istilah)](#2-glosarium-daftar-istilah)
