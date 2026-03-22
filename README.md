@@ -75,48 +75,60 @@ graph TD
 Sistem web portal dilindungi dengan mekanisme kredensial berbasis sesi berganda.
 1.  Buka *Web Browser* modern (Chrome/Edge/Firefox). Ketikkan IP Lokal server bawaan (`http://127.0.0.1:8000`) atau domain produksi yang ditentukan.
 2.  Sistem segera menolak akses anonim dan akan meredirect layar ke **Formulir Otentikasi Otomatis (Login)**.
-    > `[Masukkan Screenshot 1: Halaman Formulir Login dengan isian username dan password]`
+    > <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/97cc5a90-054e-4f0f-ab53-7c0badb26ba0" />
+
 3.  Isikan alamat pos-el (e-mail) dan kata sandi otoritatif. Tekan tuas **Sign in / Login**.
 
 #### B. Observasi Dashboard Utama (Ikhtisar)
 Panel Beranda adalah kompendium eksekutif sistem yang memberi kesan pemantauan seketika atas seluruh titik mesin yang disebar.
 1.  Setelah validasi berhasil, Anda akan disambut oleh deretan **Widget Informasi**. Kolom hijau/merah menandakan mana alat-alat _(nodes)_ yang sinkron (*Online*) dan mana yang terputus koneksi.
-    > `[Masukkan Screenshot 2: Panel Utama / Dashboard yang menyajikan summary widget]`
+    > <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/5511b1e3-1766-498c-b616-9b9fc47b973b" />
+    ><img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/9415f3e4-340f-48ec-aa73-c3dc56163519" />
+
+
 2.  Perhatikan **Tabel Status Terkini** di bagian tengan beranda; ini memperlihatkan nilai angka tegangan *Noise/Sound Pressure Level* di waktu ter-mutakhir dari masing-masing alat.
 
 #### C. Penugasan & Manajemen Konfigurasi Alat (Devices)
 Administrator memiliki kontrol total menambah dan memperbaiki kalkulasi alat secara per-unit agar tetap selaras.
 1.  Klik menu samping kiri (*Sidebar Menu*) berlabel **"Devices"** (Perangkat).
 2.  Klik opsi **"Tambah Device Baru"**. Layar pop-up (Modal Form) terbuka.
-    > `[Masukkan Screenshot 3: Antarmuka Form Penambahan Devices]`
+    > <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/cd890f4e-0077-423d-b335-8b87468f58e8" />
+    ><img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/c56696ce-3590-4a8e-bfb7-952dd234a81a" />
+
 3.  Ketikkan **Device ID** (Kode MAC Address spesifik mikrokontroler yang telah didaftarkan dalam koding). Jangan sampai salah huruf.
 4.  Ketikkan Label Nama Ruangan (misalnya: "Genset Timur"), lalu Anda dipersilakan menyesuaikan kurva kepekaan dengan **Memasukkan _SPL Offset_**. (Contoh isi: 2.0 atau -1.5). Ini krusial sebagai nilai penambah baku kalibrasi *hysteresis*.
 5.  Tekan **Simpan**.
 
 #### D. Monitoring Time-Series dan Grafik Kebisingan Berjalan
 1.  Masuk ke halaman Profil suatu alat yang spesifik. Di panel ini terdapat bagan **Line Chart (Grafik Garis)** fluktuasi level tekanan bunyi (dB).
-    > `[Masukkan Screenshot 4: Representasi Data Grafik Real-Time SPL Chart]`
+    > <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/55f705d6-7cd7-42ea-9048-6ebf44d241fb" />
+
 2.  Indikator vertikal merepresentasikan skala amplitudo *Decibel*, sedangkan jalur horisontal menggambarkan waktu. Titik-titik ekstrem yang memuncak memberi tahu admin kapan suara keras yang ganjil (berbahaya) terjadi pada area tersebut.
 
 #### E. Fitur Komando Rekam Audio Interaktif (Audio Recorder Control)
 Ini merupakan jantung dari fungsi sistem di mana intervensi manusia atau *server* bisa mengambil sampel faktual audio ruangan yang dituju secara manual.
 1.  Buka panel navigasi menuju tab khusus **Audio Recording** dari suatu alat. 
-    > `[Masukkan Screenshot 5: Panel Kendali Manual Audio Recording START dan STOP]`
+    > <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/65f19ae9-a13c-421b-8238-0eccc2bccff3" />
+    
 2.  Tekan tombol berlabel **"Start Recording"** (Mulai Rekam). Server mengeksekusi paket MQTT. Alat fisik di lokasi (ESP32) yang menerima instruksi tersebut akan mengawali rutinitas membakar suara masuk ke SD-Card (Menulis WAV Header).
 3.  Tekan tombol berlabel **"Stop Recording"**. Rekaman terhenti dan ditutup secara sempurna.
-    > `[Masukkan Screenshot 6: Tabel Daftar Riwayat Rekaman]`
+    > <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/e8e09a9e-b331-4ad0-87d3-6d7f3e37d2f9" />
+
 4.  Beralih ke tab tabel rekaman bawaan. Di sini akan muncul *file* baru. Anda diizinkan memutar, mendengarkan kembali secara *streaming* hasil rekamannya, atau mengunduhnya secara permanen.
 
 #### F. Fitur Penjadwalan Otomatis (Cron Scheduled Record)
 1.  Pilih menu navigasi sisi berlabel **"Schedules (Jadwal)"**.
-    > `[Masukkan Screenshot 7: Dashboard Konfigurator Schedule Waktu Perekaman]`
+    > <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/423a97e3-cc11-4ff9-b0ea-8b990391d79d" />
+
 2.  Modul ini membedakan alat ini di pasaran. Anda tak perlu memencet tombol rekam tiap pukul empat sore. 
 3.  Klik "Buat Jadwal Baru". Pilih alat *target*, lalu atur penanda waktu pada parameter **Waktu Jam Mulai** serta isikan berapa menit takar jeda durasi (Disediakan menu *dropdown*).
 4.  Background task di sistem Linux/Windows peladen akan selalu bersiaga memeriksa jadwal dan otomatis men-trigger langkah poin "E(2)".
 
 #### G. Pusat Pelaporan dan Ekstraksi Spreadsheet (Excel)
 1.  Masuk pada segmen navigasi **"Reports/Logs"**.
-    > `[Masukkan Screenshot 8: Komponen Formulir Ekspor Excel]`
+    > <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/7470aa56-128d-46eb-88bc-49fe449c9ad6" />
+    > <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/d7b994f3-f6f1-45ad-83cb-72593e2c8355" />
+
 2.  Tentukan parameter kurun waktu dengan menekan kalender pop-up kustom (Misal: Tanggal 1 - 5 Juni). Pilih target ID Perangkat jika hanya menginginkan data singularitas alat tertentu.
 3.  Tekan **Eksport Ke Excel / Unduh**.
 4.  Himpunan puluhan ribu _log database MySQL_ akan dipadatkan dan diunduh ke bentuk kolom _Microsoft Excel_ (`.xlsx`) siap olah untuk keperluan pemeliharaan prediktif (Predictive Maintenance).
